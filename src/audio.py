@@ -4,9 +4,7 @@ import numpy as np
 import soundcard as sc
 import soundfile as sf
 
-from src import get_config, logger
-
-config = get_config()
+from src import config, logger
 
 SPEAKER_ID = str(sc.default_speaker().name)
 

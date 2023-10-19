@@ -4,9 +4,7 @@ from threading import Event, Lock, Thread
 import numpy as np
 import PySimpleGUI as sg
 
-from src import get_config, logger
-
-config = get_config()
+from src import config, logger
 from src.audio import record_batch, save_audio_file
 from src.constants import OFF_IMAGE, ON_IMAGE
 from src.llm import generate_answer, transcribe_audio

@@ -1,8 +1,6 @@
 import PySimpleGUI as sg
 
-from src import get_config, logger
-
-config = get_config()
+from src import config, logger
 from src.constants import APPLICATION_WIDTH, OFF_IMAGE
 
 TEXT_SIZE = (int(APPLICATION_WIDTH * 0.8), 2)

@@ -4,9 +4,7 @@ from os.path import join
 
 import PySimpleGUI as sg
 
-from src import get_config, logger
-
-config = get_config()
+from src import config, logger
 
 
 def generate_audio_path():

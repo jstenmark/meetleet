@@ -4,10 +4,9 @@ from threading import Thread
 import openai
 from openai.error import RateLimitError
 
-from src import get_config, logger
+from src import config, logger
 from src.utils import save_transcript_as_text
 
-config = get_config()
 openai.api_key = config.OPENAI_API_KEY
 
 
