@@ -78,9 +78,9 @@ def generate_answer(
         Exception: If the LLM fails to generate an answer.
     """
     if short_answer:
-        system_prompt = config.SYSTEM_PROMPT + config.SHORTER_INSTRACT
+        system_prompt = config.SYSTEM_PROMPT + config.SHORTER_INSTRUCT
     else:
-        system_prompt = config.SYSTEM_PROMPT + config.LONGER_INSTRACT
+        system_prompt = config.SYSTEM_PROMPT + config.LONGER_INSTRUCT
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",

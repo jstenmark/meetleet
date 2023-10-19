@@ -32,4 +32,4 @@ class ConfigManager:
             print(f"{key}: {value}")
 
 
-_config = ConfigManager()
+config = ConfigManager()
