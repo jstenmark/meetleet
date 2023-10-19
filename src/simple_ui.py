@@ -6,7 +6,7 @@ import PySimpleGUI as sg
 
 from src.audio import record_batch, save_audio_file
 from src.constants import OFF_IMAGE, ON_IMAGE
-from src.llm import generate_answer
+from src.llm import generate_answer, transcribe_audio
 from src.ui import create_button, create_layout
 from src.utils import generate_audio_path, logger
 
@@ -84,7 +84,7 @@ class MainApp:
                 break
 
             label.update("Start analyzing...")
-            new_transcript = llm.transcribe_audio(file_path_audio)
+            new_transcript = transcribe_audio(file_path_audio)
             if new_transcript != self.app_state.transcript:
                 logger.debug(new_transcript)
                 os.remove(file_path_audio)

@@ -1,10 +1,12 @@
 import os
 
+from src.config_manager import config
+
 # FILES
-FILE_NAME_LOG = "debug.log"
-FILE_NAME_TRANSCRIPT = "transcript.txt"
-FILE_NAME_AUDIO = "soundcapture.wav"
-PATH = "/www/hack_interview/"
+FILE_NAME_LOG = config.FILE_NAME_LOG
+FILE_NAME_TRANSCRIPT = config.FILE_NAME_TRANSCRIPT
+FILE_NAME_AUDIO = config.FILE_NAME_AUDIO
+SRC_PATH = config.SRC_PATH
 
 # AUDIO
 SAMPLE_RATE = 48000  # [Hz]. sampling rate.

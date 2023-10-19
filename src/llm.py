@@ -5,7 +5,7 @@ import openai
 from openai.error import RateLimitError
 
 from src.config_manager import config
-from src.constants import FILE_NAME_AUDIO, FILE_NAME_TRANSCRIPT, PATH
+from src.constants import FILE_NAME_AUDIO, FILE_NAME_TRANSCRIPT, SRC_PATH
 from src.prompts import (INTERVIEW_POSTION, LONGER_INSTRACT, SHORTER_INSTRACT,
                          SYSTEM_PROMPT)
 from src.utils import logger, save_transcript_as_text
