@@ -3,17 +3,15 @@ from datetime import datetime
 from os.path import join
 
 import PySimpleGUI as sg
-from loguru import logger
 
-from src.config_manager import config
-from src.constants import FILE_NAME_AUDIO, FILE_NAME_LOG, OFF_IMAGE, SRC_PATH
+from src import get_config, logger
 
-logger.add(SRC_PATH + FILE_NAME_LOG, level=config.LOG_LEVEL, rotation="10 MB", enqueue=True)
-logger.add(sys.stdout, level=config.LOG_LEVEL, enqueue=True)
+config = get_config()
+
 
 def generate_audio_path():
     return join(
-        SRC_PATH, f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')}-{FILE_NAME_AUDIO}"
+        config.SRC_PATH, f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')}-{config.FILE_NAME_AUDIO}"
     )
 
 

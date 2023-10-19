@@ -1,16 +1,5 @@
-import os
 
-from src.config_manager import config
 
-# FILES
-FILE_NAME_LOG = config.FILE_NAME_LOG
-FILE_NAME_TRANSCRIPT = config.FILE_NAME_TRANSCRIPT
-FILE_NAME_AUDIO = config.FILE_NAME_AUDIO
-SRC_PATH = config.SRC_PATH
-
-# AUDIO
-SAMPLE_RATE = 48000  # [Hz]. sampling rate.
-RECORD_SEC = 1  # [sec]. duration recording audio.
 
 # GUI
 APPLICATION_WIDTH = 85

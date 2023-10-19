@@ -4,12 +4,10 @@ from threading import Thread
 import openai
 from openai.error import RateLimitError
 
-from src.config_manager import config
-from src.constants import FILE_NAME_AUDIO, FILE_NAME_TRANSCRIPT, SRC_PATH
-from src.prompts import (INTERVIEW_POSTION, LONGER_INSTRACT, SHORTER_INSTRACT,
-                         SYSTEM_PROMPT)
-from src.utils import logger, save_transcript_as_text
+from src import get_config, logger
+from src.utils import save_transcript_as_text
 
+config = get_config()
 openai.api_key = config.OPENAI_API_KEY
 
 
@@ -81,9 +79,9 @@ def generate_answer(
         Exception: If the LLM fails to generate an answer.
     """
     if short_answer:
-        system_prompt = SYSTEM_PROMPT + SHORTER_INSTRACT
+        system_prompt = config.SYSTEM_PROMPT + config.SHORTER_INSTRACT
     else:
-        system_prompt = SYSTEM_PROMPT + LONGER_INSTRACT
+        system_prompt = config.SYSTEM_PROMPT + config.LONGER_INSTRACT
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",

@@ -4,11 +4,14 @@ from threading import Event, Lock, Thread
 import numpy as np
 import PySimpleGUI as sg
 
+from src import get_config, logger
+
+config = get_config()
 from src.audio import record_batch, save_audio_file
 from src.constants import OFF_IMAGE, ON_IMAGE
 from src.llm import generate_answer, transcribe_audio
 from src.ui import create_button, create_layout
-from src.utils import generate_audio_path, logger
+from src.utils import generate_audio_path
 
 
 class State:

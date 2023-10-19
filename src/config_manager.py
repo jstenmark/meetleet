@@ -23,9 +23,13 @@ class ConfigManager:
         self.SHORTER_INSTRUCT = os.getenv("SHORTER_INSTRUCT")
         self.LONGER_INSTRUCT = os.getenv("LONGER_INSTRUCT")
 
+        self.SAMPLE_RATE = 48000  # [Hz]. sampling rate.
+        self.RECORD_SEC = 1  # [sec]. duration recording audio.
+
+
     def echo_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}: {value}")
 
 
-config = ConfigManager()
+_config = ConfigManager()
