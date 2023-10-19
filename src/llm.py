@@ -4,13 +4,13 @@ from threading import Thread
 import openai
 from openai.error import RateLimitError
 
-from src.constants import (FILE_NAME_AUDIO, FILE_NAME_TRANSCRIPT,
-                           OPENAI_API_KEY, PATH)
+from src.config_manager import config
+from src.constants import FILE_NAME_AUDIO, FILE_NAME_TRANSCRIPT, PATH
 from src.prompts import (INTERVIEW_POSTION, LONGER_INSTRACT, SHORTER_INSTRACT,
                          SYSTEM_PROMPT)
 from src.utils import logger, save_transcript_as_text
 
-openai.api_key = OPENAI_API_KEY
+openai.api_key = config.OPENAI_API_KEY
 
 
 def transcribe_audio(path_to_file) -> str:

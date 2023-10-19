@@ -1,14 +1,5 @@
 import os
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
-# ENVS
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
-
 # FILES
 FILE_NAME_LOG = "debug.log"
 FILE_NAME_TRANSCRIPT = "transcript.txt"

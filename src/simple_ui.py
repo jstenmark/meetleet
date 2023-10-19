@@ -74,6 +74,10 @@ class MainApp:
             try:
                 with open(file_path_audio, 'r') as file:
                     pass
+            except TypeError:
+                self.app_state.ana_state.toggle()
+                label.update("No audio file to analyze")
+                break
             except FileNotFoundError:
                 self.app_state.ana_state.toggle()
                 label.update("No audio file to analyze")
@@ -97,7 +101,7 @@ class MainApp:
         try:
             audio_data_list = []
             while self.should_run_threads.is_set() and self.app_state.rec_state.state:
-                audio_sample = audio.record_batch()
+                audio_sample = record_batch()
                 if audio_sample is not None:
                     audio_data_list.append(audio_sample)
 
@@ -108,7 +112,7 @@ class MainApp:
                 return
 
             audiopath = generate_audio_path()
-            audio.save_audio_file(audio_data, audiopath)
+            save_audio_file(audio_data, audiopath)
             logger.debug(f"[AUDIO] Audio saved to {audiopath}")
             self.app_state.audio_state.set_filename(audiopath)
         except Exception as e:
@@ -165,3 +169,4 @@ if __name__ == "__main__":
 
     app = MainApp(app_state)
     app.run_event_loop(WINDOW)
+

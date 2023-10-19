@@ -1,14 +1,13 @@
+import os
+
 import numpy as np
 import soundcard as sc
 import soundfile as sf
-import os
 
+from src.constants import FILE_NAME_LOG, RECORD_SEC, SAMPLE_RATE
 from src.utils import logger
-from src.constants import FILE_NAME_LOG, LOG_LEVEL, RECORD_SEC, SAMPLE_RATE
-
 
 SPEAKER_ID = str(sc.default_speaker().name)
-
 
 def record_batch(record_sec: int = RECORD_SEC) -> np.ndarray:
     """

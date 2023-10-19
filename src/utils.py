@@ -1,14 +1,15 @@
+import sys
 from datetime import datetime
 from os.path import join
 
 import PySimpleGUI as sg
 from loguru import logger
 
-from src.constants import (FILE_NAME_AUDIO, FILE_NAME_LOG, LOG_LEVEL,
-                           OFF_IMAGE, PATH)
+from src.config_manager import config
+from src.constants import FILE_NAME_AUDIO, FILE_NAME_LOG, OFF_IMAGE, PATH
 
-logger.add(PATH + FILE_NAME_LOG, level=LOG_LEVEL, rotation="10 MB", enqueue=True)
-
+logger.add(PATH + FILE_NAME_LOG, level=config.LOG_LEVEL, rotation="10 MB", enqueue=True)
+logger.add(sys.stdout, level=config.LOG_LEVEL, enqueue=True)
 
 def generate_audio_path():
     return join(
