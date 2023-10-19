@@ -1,10 +1,9 @@
 import PySimpleGUI as sg
 
 from src import config, logger
-from src.constants import APPLICATION_WIDTH, OFF_IMAGE
+from src.constants import (APPLICATION_WIDTH, COMMON_TEXT_AREA_SETTINGS,
+                           OFF_IMAGE, TEXT_SIZE)
 
-TEXT_SIZE = (int(APPLICATION_WIDTH * 0.8), 2)
-COMMON_TEXT_AREA_SETTINGS = {"bg_color": "grey", "text_color": "white"}
 
 def get_text_area(text, key, size, bg_color=None, text_color=None):
     bg_color = bg_color if bg_color else sg.theme_background_color()
@@ -18,7 +17,7 @@ def get_text_area(text, key, size, bg_color=None, text_color=None):
     )
 
 
-def create_button():
+def create_button(key):
     return sg.Button(
         image_data=OFF_IMAGE,
         border_width=0,
@@ -27,6 +26,7 @@ def create_button():
             sg.theme_background_color(),
             sg.theme_background_color(),
         ),
+        key=f"{key}:button"
     )
 
 def create_record_section(record_button):
@@ -53,6 +53,6 @@ def create_layout(record_button, analyze_button):
         analysis_section,
         label_section,
         *answer_section,
-        [sg.Button("cancel")]
+        [sg.Button("Close", key="cancel")]
     ]
 

@@ -160,7 +160,7 @@ def handle_answers(transcript, state):
 
 if __name__ == "__main__":
     sg.theme("DarkAmber")
-    app_state = ApplicationState(create_button(), create_button())
+    app_state = ApplicationState(create_button("r"), create_button("a"))
 
     layout = create_layout(app_state.rec_state.btn, app_state.ana_state.btn)
 
