@@ -88,17 +88,18 @@ class MainApp:
             with open(file_path_audio, 'r') as file:  # noqa: F841
                 label.update("Starting transcription of audiofile...")
                 new_transcript = transcribe_audio(file_path_audio)
-                if new_transcript != self.app_state.transcript:
-                    logger.debug(new_transcript)
-                    os.remove(file_path_audio)
-                    if new_transcript == "you":
-                        state.toggle()
-                        label.update("ERROR: empty transcript")
-                        return False
-                    label.update(new_transcript)
-                    self.app_state.transcript = new_transcript
-                    handle_answers(new_transcript, self.WINDOW, state, label)
+                logger.debug(new_transcript)
+            if new_transcript != self.app_state.transcript:
+                os.rename(file_path_audio, file_path_audio.replace(config.FILE_NAME_AUDIO, "backup-"+ config.FILE_NAME_AUDIO))
+                if new_transcript == "you":
+                    state.toggle()
+                    label.update("ERROR: empty transcript")
+                    self.app_state.transcript = None
                     return False
+                label.update(new_transcript)
+                self.app_state.transcript = new_transcript
+                handle_answers(new_transcript, self.WINDOW, state, label)
+                return False
         except (TypeError, FileNotFoundError, Exception):
             state.toggle()
             label.update("No audio file to analyze")
@@ -130,7 +131,7 @@ class MainApp:
 
     def run_event_loop(self):
         while True:
-            event, values = self.WINDOW.read()
+            event, values = self.WINDOW.read(timeout=10)
             if event in [sg.WIN_CLOSED, "exit"]:
                 break
             else:
