@@ -4,9 +4,9 @@ from threading import Event, Lock, Thread
 import numpy as np
 import PySimpleGUI as sg
 
-from src import config, logger
+#from assets.constants import OFF_IMAGE, ON_IMAGE
+from src import OFF_IMAGE, ON_IMAGE, config, logger
 from src.audio import record_batch, save_audio_file
-from src.constants import OFF_IMAGE, ON_IMAGE
 from src.llm import generate_answer, transcribe_audio
 from src.ui import create_button, create_layout
 from src.utils import generate_audio_path
@@ -49,59 +49,66 @@ class MainApp:
         self.app_state = app_state
         self.should_run_threads = Event()
         self.should_run_threads.set()
-        self.event_handlers = {
-            "cancel": self.handle_cancel_event,
-            "r": self.handle_recording_event,
-            "a": self.handle_analysis_event,
-        }
+        self.active_threads = []
 
-    def handle_recording_event(self, event, values):
-        self.app_state.rec_state.toggle()
-        if self.app_state.rec_state.state:
-            with self.app_state.rec_state.lock:
-                Thread(target=self.background_recording_loop).start()
+    def handle_toggle_event(self, event, values):
+        if not self.should_run_threads.is_set():
+            return
+        event_name = event.split(":")[0]  # Extract the event name
+        state_to_toggle = None
+        if event_name == "r":
+            state_to_toggle = self.app_state.rec_state
+            label = WINDOW["ana_label"]
+        elif event_name == "a":
+            state_to_toggle = self.app_state.ana_state
+            label = WINDOW["ana_label"]
 
-    def handle_analysis_event(self, event, values):
-        self.app_state.ana_state.toggle()
-        if self.app_state.ana_state.state:
-            with self.app_state.ana_state.lock:
-                Thread(target=self.background_analyzing_loop).start()
+        if state_to_toggle:
+            state_to_toggle.toggle()
+            if state_to_toggle.state:
+                with state_to_toggle.lock:
+                    t = Thread(target=self.background_loop, args=(state_to_toggle, label))
+                    self.active_threads.append(t)
+                    t.start()
 
-    def background_analyzing_loop(self):
-        label = WINDOW["ana_label"]
-        while self.should_run_threads.is_set() and self.app_state.ana_state.state:
-            file_path_audio = self.app_state.audio_state.get_filename()
-
-            try:
-                with open(file_path_audio, 'r') as file:
-                    pass
-            except TypeError:
-                self.app_state.ana_state.toggle()
-                label.update("No audio file to analyze")
-                break
-            except FileNotFoundError:
-                self.app_state.ana_state.toggle()
-                label.update("No audio file to analyze")
+    def background_loop(self, state, label):
+        while self.should_run_threads.is_set() and state.state:
+            if state == self.app_state.ana_state:
+                res = self.background_analyzing_loop(state,label)
+            elif state == self.app_state.rec_state:
+                res = self.background_recording_loop(state)
+            if res is False:
                 break
 
-            label.update("Start analyzing...")
-            new_transcript = transcribe_audio(file_path_audio)
-            if new_transcript != self.app_state.transcript:
-                logger.debug(new_transcript)
-                os.remove(file_path_audio)
-                if new_transcript == "you":
-                    self.app_state.ana_state.toggle()
-                    label.update("ERROR: empty transcript")
-                    break
-                label.update(new_transcript)
-                self.app_state.transcript = new_transcript
-                handle_answers(new_transcript, self.app_state.ana_state)
-                break
+    def background_analyzing_loop(self,state,label):
+        file_path_audio = self.app_state.audio_state.get_filename()
 
-    def background_recording_loop(self):
+        try:
+            with open(file_path_audio, 'r') as file:
+                label.update("Starting transcription of audiofile...")
+                new_transcript = transcribe_audio(file_path_audio)
+                if new_transcript != self.app_state.transcript:
+                    logger.debug(new_transcript)
+                    os.remove(file_path_audio)
+                    if new_transcript == "you":
+                        state.toggle()
+                        label.update("ERROR: empty transcript")
+                        return False
+                    label.update(new_transcript)
+                    self.app_state.transcript = new_transcript
+                    handle_answers(new_transcript, state, label)
+                    return False
+        except (TypeError, FileNotFoundError, Exception):
+            state.toggle()
+            label.update("No audio file to analyze")
+        return False
+
+
+
+    def background_recording_loop(self,state):
         try:
             audio_data_list = []
-            while self.should_run_threads.is_set() and self.app_state.rec_state.state:
+            while self.should_run_threads.is_set() and state.state:
                 audio_sample = record_batch()
                 if audio_sample is not None:
                     audio_data_list.append(audio_sample)
@@ -110,36 +117,36 @@ class MainApp:
 
             if audio_data is None:
                 logger.error("[AUDIO] No audio data collected")
-                return
+                return True
 
             audiopath = generate_audio_path()
             save_audio_file(audio_data, audiopath)
             logger.debug(f"[AUDIO] Audio saved to {audiopath}")
             self.app_state.audio_state.set_filename(audiopath)
         except Exception as e:
-            pass
-
-    def handle_cancel_event(self, event, values):
-        self.should_run_threads = False
-        WINDOW.close()
-        exit(0)
+            logger.debug(f"[AUDIO] background_recording_loop error={e}")
+        return False
 
     def run_event_loop(self, window):
         while True:
             event, values = window.read()
-            if event == sg.WIN_CLOSED:
+            if event in [sg.WIN_CLOSED, "exit"]:
                 break
-            event_name = event.split(":")[0] if ":" in event else event
-            handler = self.event_handlers.get(event_name.lower())
-            if handler:
-                handler(event, values)
+            else:
+                self.handle_toggle_event(event,values)
+
+        # exit the app
+        self.should_run_threads.clear()
+        for t in self.active_threads:
+            t.join()
+        self.active_threads.clear()
         window.close()
+        exit(0)
 
 
-def handle_answers(transcript, state):
+def handle_answers(transcript, state, label):
     if transcript is None:
         return
-
     lock = Lock()
     finished_threads = 0
 
