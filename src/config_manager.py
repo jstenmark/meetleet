@@ -3,15 +3,18 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from assets.constants import OFF_IMAGE, ON_IMAGE
-
+_instance = None
 
 class ConfigManager:
+    def __new__(cls):
+        global _instance
+        if _instance is None:
+            _instance = super(ConfigManager, cls).__new__(cls)
+        return _instance
+
+
     def __init__(self):
         FILE_PATH_DOTENV = Path(__file__).resolve().parent / f"../{getenv('FILE_DOTENV', '.env')}"
-
-        print(f"DOTENV PATH={FILE_PATH_DOTENV}")
-
         load_dotenv(dotenv_path=FILE_PATH_DOTENV)
 
         # API
@@ -23,6 +26,7 @@ class ConfigManager:
 
         # Paths/Files
         self.SRC_PATH = getenv("SRC_PATH")
+        self.TMP_DIR = getenv("TMP_DIR")
         self.FILE_NAME_LOG = getenv("FILE_NAME_LOG")
         self.FILE_NAME_AUDIO = getenv("FILE_NAME_AUDIO")
         self.FILE_NAME_TRANSCRIPT = getenv("FILE_NAME_TRANSCRIPT")
@@ -38,8 +42,8 @@ class ConfigManager:
         self.RECORD_SEC = 1  # [sec]. duration recording audio.
 
         # GUI
-        self.OFF_IMAGE = getenv("OFF_IMAGE", OFF_IMAGE)
-        self.ON_IMAGE = getenv("ON_IMAGE", ON_IMAGE)
+        self.OFF_IMAGE = getenv("OFF_IMAGE","")
+        self.ON_IMAGE = getenv("ON_IMAGE", "")
         self.APPLICATION_WIDTH = int(getenv("APPLICATION_WIDTH", 85))
         self.TEXT_SIZE = (int(getenv("TEXT_SIZE_WIDTH", self.APPLICATION_WIDTH * 0.8)), 2)
         self.COMMON_TEXT_AREA_SETTINGS = {
@@ -49,11 +53,10 @@ class ConfigManager:
 
         # Print config
         if self.PRINT_CONFIG is True:
-            self.echo_config()
+            self.print_config()
 
-    def echo_config(self):
+    def print_config(self):
         for key, value in self.__dict__.items():
             print(f"{key}={value}")
-
 
 config = ConfigManager()

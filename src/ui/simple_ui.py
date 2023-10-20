@@ -3,12 +3,13 @@ from threading import Event, Lock, Thread
 
 import numpy as np
 import PySimpleGUI as sg
+from loguru import logger
 
-from src import OFF_IMAGE, ON_IMAGE, logger
-from src.audio import record_batch, save_audio_file
+from src.audio import record_batch
+from src.config_manager import config
 from src.llm import generate_answer, transcribe_audio
-from src.ui import create_button, create_layout
-from src.utils import generate_audio_path
+from src.ui.constants import OFF_IMAGE, ON_IMAGE
+from src.utils import generate_file_path, save_audio_to_file
 
 
 class State:
@@ -44,11 +45,12 @@ class ApplicationState:
 
 
 class MainApp:
-    def __init__(self, app_state):
+    def __init__(self, app_state, window):
         self.app_state = app_state
         self.should_run_threads = Event()
         self.should_run_threads.set()
         self.active_threads = []
+        self.WINDOW = window
 
     def handle_toggle_event(self, event, values):
         if not self.should_run_threads.is_set():
@@ -57,10 +59,10 @@ class MainApp:
         state_to_toggle = None
         if event_name == "r":
             state_to_toggle = self.app_state.rec_state
-            label = WINDOW["ana_label"]
+            label = self.WINDOW["ana_label"]
         elif event_name == "a":
             state_to_toggle = self.app_state.ana_state
-            label = WINDOW["ana_label"]
+            label = self.WINDOW["ana_label"]
 
         if state_to_toggle:
             state_to_toggle.toggle()
@@ -95,7 +97,7 @@ class MainApp:
                         return False
                     label.update(new_transcript)
                     self.app_state.transcript = new_transcript
-                    handle_answers(new_transcript, state, label)
+                    handle_answers(new_transcript, self.WINDOW, state, label)
                     return False
         except (TypeError, FileNotFoundError, Exception):
             state.toggle()
@@ -118,17 +120,17 @@ class MainApp:
                 logger.error("[AUDIO] No audio data collected")
                 return True
 
-            audiopath = generate_audio_path()
-            save_audio_file(audio_data, audiopath)
+            audiopath = generate_file_path(config.FILE_NAME_AUDIO)
+            save_audio_to_file(audio_data, audiopath)
             logger.debug(f"[AUDIO] Audio saved to {audiopath}")
             self.app_state.audio_state.set_filename(audiopath)
         except Exception as e:
             logger.debug(f"[AUDIO] background_recording_loop error={e}")
         return False
 
-    def run_event_loop(self, window):
+    def run_event_loop(self):
         while True:
-            event, values = window.read()
+            event, values = self.WINDOW.read()
             if event in [sg.WIN_CLOSED, "exit"]:
                 break
             else:
@@ -139,11 +141,11 @@ class MainApp:
         for t in self.active_threads:
             t.join()
         self.active_threads.clear()
-        window.close()
+        self.WINDOW.close()
         exit(0)
 
 
-def handle_answers(transcript, state, label):
+def handle_answers(transcript, WINDOW, state, label):
     if transcript is None:
         return
     lock = Lock()
@@ -162,18 +164,4 @@ def handle_answers(transcript, state, label):
 
     Thread(target=response, args=(WINDOW["quick_label"], True, 0)).start()
     Thread(target=response, args=(WINDOW["full_label"], False, 0.7)).start()
-
-
-if __name__ == "__main__":
-    sg.theme("DarkAmber")
-    app_state = ApplicationState(create_button("r"), create_button("a"))
-
-    layout = create_layout(app_state.rec_state.btn, app_state.ana_state.btn)
-
-    WINDOW = sg.Window(
-        "Meetleet ChatGPT", layout, return_keyboard_events=True, use_default_focus=False
-    )
-
-    app = MainApp(app_state)
-    app.run_event_loop(WINDOW)
 

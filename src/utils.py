@@ -1,22 +1,53 @@
 from datetime import datetime
 from os.path import join
+from threading import Thread
 
-from src import config, logger
+import numpy as np
+import soundfile as sf
+from loguru import logger
+
+from src.config_manager import config
 
 
-def generate_audio_path():
-    return join(
-        config.SRC_PATH, f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')}-{config.FILE_NAME_AUDIO}"
-    )
+def generate_file_path(filename):
+    return join(config.SRC_PATH+config.TMP_DIR, f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')}-{filename}")
 
-
-def save_transcript_as_text(transcript, transcript_filename):
-    if transcript is not None:
-        logger.debug(f"[TRANSCRIPT] {transcript}")
+def save_transcript_to_text(transcript, transcript_filename = config.FILE_NAME_TRANSCRIPT):
+    def write_in_new_thread(filepath, transcript):
         try:
-            with open(transcript_filename, "w") as f:
+            with open(filepath, "w") as f:
                 f.write(transcript)
+                logger.debug(f"[TRANSCRIPT_SAVE] {filepath}")
         except Exception as e:
-            logger.error(f"[TRANSCRIPT] SAVE=False, Error: {e}")
+            logger.error(f"[TRANSCRIPT_SAVE] SAVE=False - Error: {e}")
+    if transcript is None:
+        logger.debug("[TRANSCRIPT_SAVE] SAVE=False - Empty transcript")
     else:
-        logger.debug("[TRANSCRIPT] Empty transcript, couldn't save")
+        Thread(target=write_in_new_thread, args=(generate_file_path(transcript_filename), transcript)).start()
+
+def save_audio_to_file(audio_data: np.ndarray, file_audio_path) -> None:
+    """
+    Saves an audio data array to a file.
+
+    Args:
+        audio_data (np.ndarray): The audio data to be saved.
+        file_audio_path (str): The name of the output file.
+
+    Returns:
+        None
+
+    Example:
+        ```python
+        audio_data = np.array([0.1, 0.2, 0.3])
+        save_audio_file(audio_data, "output.wav")
+        ```
+    """
+    try:
+        if audio_data is None or not isinstance(audio_data, np.ndarray):
+            logger.error("[AUDIO_SAVE] INVALID_CONTENT")
+            return
+        sf.write(file=file_audio_path, data=audio_data, samplerate=config.SAMPLE_RATE)
+    except IOError:
+        logger.error("[AUDIO_SAVE] WRITE FAILED")
+    except Exception as e:
+        logger.exception(f"[AUDIO_SAVE] ERRROR={e}")

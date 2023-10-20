@@ -1,9 +1,11 @@
 import os
 
 import openai
+from loguru import logger
 from openai.error import RateLimitError
 
-from src import config, logger
+from src.config_manager import config
+from src.utils import save_transcript_to_text
 
 openai.api_key = config.OPENAI_API_KEY
 
@@ -36,8 +38,8 @@ def transcribe_audio(path_to_file) -> str:
                 # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_handle_rate_limits.ipynb
                 transcript = openai.Audio.translate("whisper-1", audio_file)
                 logger.debug("[TRANSCRIBE] FINISHED WHISPER TRANSLATE")
-                # from src.utils import save_transcript_as_text
-                # save_transcript_as_text(transcript["text"], FILE_NAME_TRANSCRIPT)
+
+                save_transcript_to_text(transcript["text"],config.FILE_NAME_TRANSCRIPT)
                 # if transcript["text"] == "you":
                 #     return "Whats best with python?"
                 return transcript["text"]
