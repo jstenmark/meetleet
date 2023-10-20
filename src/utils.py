@@ -1,8 +1,5 @@
-import sys
 from datetime import datetime
 from os.path import join
-
-import PySimpleGUI as sg
 
 from src import config, logger
 

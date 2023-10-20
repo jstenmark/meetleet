@@ -84,6 +84,7 @@ ipython_config.py
 
 .vsocde/*-Completion.json
 .vscode/PythonImportHelper-v2-Completion.json
+*/.vscode/PythonImportHelper-v2-Completion.json
 transcript.txt
 *.wav
 temp/*

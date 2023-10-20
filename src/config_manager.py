@@ -44,11 +44,11 @@ class ConfigManager:
         self.TEXT_SIZE = (int(getenv("TEXT_SIZE_WIDTH", self.APPLICATION_WIDTH * 0.8)), 2)
         self.COMMON_TEXT_AREA_SETTINGS = {
             "bg_color": getenv("COMMON_TEXT_AREA_BG_COLOR", "darkgrey"),
-            "text_color":  getenv("COMMON_TEXT_AREA_TEXT_COLOR", "lightgrey")
+            "text_color":  getenv("COMMON_TEXT_AREA_TEXT_COLOR", "black")
         }
 
         # Print config
-        if self.PRINT_CONFIG == True:
+        if self.PRINT_CONFIG is True:
             self.echo_config()
 
     def echo_config(self):

@@ -4,8 +4,7 @@ from threading import Event, Lock, Thread
 import numpy as np
 import PySimpleGUI as sg
 
-#from assets.constants import OFF_IMAGE, ON_IMAGE
-from src import OFF_IMAGE, ON_IMAGE, config, logger
+from src import OFF_IMAGE, ON_IMAGE, logger
 from src.audio import record_batch, save_audio_file
 from src.llm import generate_answer, transcribe_audio
 from src.ui import create_button, create_layout
@@ -84,7 +83,7 @@ class MainApp:
         file_path_audio = self.app_state.audio_state.get_filename()
 
         try:
-            with open(file_path_audio, 'r') as file:
+            with open(file_path_audio, 'r') as file:  # noqa: F841
                 label.update("Starting transcription of audiofile...")
                 new_transcript = transcribe_audio(file_path_audio)
                 if new_transcript != self.app_state.transcript:

@@ -1,11 +1,8 @@
 import PySimpleGUI as sg
 
 from assets.constants import OFF_IMAGE
-from src import config, logger
+from src import APPLICATION_WIDTH, COMMON_TEXT_AREA_SETTINGS, TEXT_SIZE
 
-APPLICATION_WIDTH=config.APPLICATION_WIDTH
-COMMON_TEXT_AREA_SETTINGS=config.COMMON_TEXT_AREA_SETTINGS
-TEXT_SIZE=config.TEXT_SIZE
 
 def get_text_area(text, key, size, bg_color=None, text_color=None):
     bg_color = bg_color if bg_color else sg.theme_background_color()
@@ -41,8 +38,8 @@ def create_label_section():
     return [get_text_area("", "ana_label", size=(APPLICATION_WIDTH, 2), **COMMON_TEXT_AREA_SETTINGS)]
 
 def create_answer_section():
-    quick_answer = get_text_area("", "quick_label", size=(APPLICATION_WIDTH, 5), **COMMON_TEXT_AREA_SETTINGS)
-    full_answer = get_text_area("", "full_label", size=(APPLICATION_WIDTH, 12), **COMMON_TEXT_AREA_SETTINGS)
+    quick_answer = get_text_area("", "quick_label", size=(APPLICATION_WIDTH, 10), **COMMON_TEXT_AREA_SETTINGS)
+    full_answer = get_text_area("", "full_label", size=(APPLICATION_WIDTH, 20), **COMMON_TEXT_AREA_SETTINGS)
     return [[sg.Text("SHORT ANSWER")], [quick_answer], [sg.Text("LONG ANSWER:")], [full_answer]]
 
 def create_layout(record_button, analyze_button):
