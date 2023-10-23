@@ -1,19 +1,38 @@
+import json
+import os
 from os import getenv
 from pathlib import Path
 
+import soundcard as sc
 from dotenv import load_dotenv
 
 _instance = None
 
-class ConfigManager:
+class Config:
+    log_output_label = None
+
+    @classmethod
+    def set_log_output_label(cls, label):
+        cls.log_output_label = label
+
+    @classmethod
+    def log_message(cls, message, log_output_label="-LOG_OUTPUT-"):
+        if log_output_label and cls.log_output_label:
+            cls.log_output_label.update(value=message+"\n", append=True)
+
+
+
     def __new__(cls):
         global _instance
         if _instance is None:
-            _instance = super(ConfigManager, cls).__new__(cls)
+            _instance = super(Config, cls).__new__(cls)
         return _instance
 
 
     def __init__(self):
+        self.CONFIG_FILE = "config.json"
+        self.load_config()
+
         FILE_PATH_DOTENV = Path(__file__).resolve().parent / f"../{getenv('FILE_DOTENV', '.env')}"
         load_dotenv(dotenv_path=FILE_PATH_DOTENV)
 
@@ -51,12 +70,42 @@ class ConfigManager:
             "text_color":  getenv("COMMON_TEXT_AREA_TEXT_COLOR", "black")
         }
 
-        # Print config
-        if self.PRINT_CONFIG is True:
-            self.print_config()
+        self.SELECTED_AUDIO_DEVICE = getenv("SELECTED_AUDIO_DEVICE", str(sc.default_speaker().name))
+        self.IS_MIC = getenv("IS_MIC", True)
+
+
+        self.print_config()
+
+    def save_config(self):
+        try:
+            with open(self.CONFIG_FILE, "w") as f:
+                json.dump({"SPEAKER_ID": self.SPEAKER_ID, "SELECTED_AUDIO_DEVICE": self.SELECTED_AUDIO_DEVICE, "IS_MIC": self.IS_MIC}, f)
+        except Exception as e:
+            print(f"Failed to save config: {e}")
+
+    def load_config(self):
+        try:
+            if os.path.exists(self.CONFIG_FILE):
+                with open(self.CONFIG_FILE, "r") as f:
+                    data = json.load(f)
+                self.SPEAKER_ID = data.get("SPEAKER_ID", "")
+                self.SELECTED_AUDIO_DEVICE = data.get("SELECTED_AUDIO_DEVICE", "")
+                self.IS_MIC = data.get("IS_MIC", True)
+            else:
+                print(f"{self.CONFIG_FILE} not found. Using default config.")
+                self.SPEAKER_ID = ""
+                self.SELECTED_AUDIO_DEVICE = ""
+                self.IS_MIC = True
+        except Exception as e:
+            print(f"Failed to load config: {e}")
+
 
     def print_config(self):
+        output_str = "Configuration:\n"
         for key, value in self.__dict__.items():
-            print(f"{key}={value}")
+            output_str += f"{key}={value}\n"
 
-config = ConfigManager()
+        self.log_message(output_str)
+
+
+config = Config()

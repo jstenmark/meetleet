@@ -9,6 +9,7 @@ from src.audio import record_batch
 from src.config_manager import config
 from src.llm import generate_answer, transcribe_audio
 from src.ui.constants import OFF_IMAGE, ON_IMAGE
+from src.ui.settings import open_settings_dialog
 from src.utils import generate_file_path, save_audio_to_file
 
 
@@ -52,6 +53,7 @@ class MainApp:
         self.active_threads = []
         self.WINDOW = window
 
+
     def handle_toggle_event(self, event, values):
         if not self.should_run_threads.is_set():
             return
@@ -59,10 +61,10 @@ class MainApp:
         state_to_toggle = None
         if event_name == "r":
             state_to_toggle = self.app_state.rec_state
-            label = self.WINDOW["ana_label"]
+            label = self.WINDOW["-TRANSCRIBE_OUTPUT-"].update
         elif event_name == "a":
             state_to_toggle = self.app_state.ana_state
-            label = self.WINDOW["ana_label"]
+            label = self.WINDOW["-TRANSCRIBE_OUTPUT-"].update
 
         if state_to_toggle:
             state_to_toggle.toggle()
@@ -72,42 +74,47 @@ class MainApp:
                     self.active_threads.append(t)
                     t.start()
 
-    def background_loop(self, state, label):
+    def background_loop(self, state, update_output_func):
         while self.should_run_threads.is_set() and state.state:
+
             if state == self.app_state.ana_state:
-                res = self.background_analyzing_loop(state,label)
+                res = self.background_analyzing_loop(state,update_output_func)
             elif state == self.app_state.rec_state:
-                res = self.background_recording_loop(state)
+                res = self.background_recording_loop(state, update_output_func)
             if res is False:
                 break
 
-    def background_analyzing_loop(self,state,label):
+    def background_analyzing_loop(self,state,update):
         file_path_audio = self.app_state.audio_state.get_filename()
-
         try:
             with open(file_path_audio, 'r') as file:  # noqa: F841
-                label.update("Starting transcription of audiofile...")
+                config.log_message("[ANALYZING_LOOP] Starting transcription")
                 new_transcript = transcribe_audio(file_path_audio)
+                config.log_message(f"[ANALYZING_LOOP] Finished transcription {new_transcript}")
                 logger.debug(new_transcript)
+
             if new_transcript != self.app_state.transcript:
                 os.rename(file_path_audio, file_path_audio.replace(config.FILE_NAME_AUDIO, "backup-"+ config.FILE_NAME_AUDIO))
                 if new_transcript == "you":
                     state.toggle()
-                    label.update("ERROR: empty transcript")
+                    config.log_message("[ANALYZING_LOOP] Empty transcript")
                     self.app_state.transcript = None
                     return False
-                label.update(new_transcript)
-                self.app_state.transcript = new_transcript
-                handle_answers(new_transcript, self.WINDOW, state, label)
-                return False
+                else:
+                    self.app_state.transcript = new_transcript
+                    update(self.app_state.transcript)
+                    handle_answers(self.app_state.transcript, state, self.WINDOW["-QUICK_OUTPUT-"].update, self.WINDOW["-FULL_OUTPUT-"].update,)
+
         except (TypeError, FileNotFoundError, Exception):
             state.toggle()
-            label.update("No audio file to analyze")
+            config.log_message("[ANALYZING_LOOP] Audio file not found")
         return False
 
 
 
-    def background_recording_loop(self,state):
+    def background_recording_loop(self,state,update):
+        update('test window')
+
         try:
             audio_data_list = []
             while self.should_run_threads.is_set() and state.state:
@@ -118,22 +125,33 @@ class MainApp:
             audio_data = np.vstack(audio_data_list)
 
             if audio_data is None:
-                logger.error("[AUDIO] No audio data collected")
+                config.log_message("[RECORDING_LOOP] No audio recorded")
+                logger.error("[RECORDING_LOOP] No audio data collected")
                 return True
 
             audiopath = generate_file_path(config.FILE_NAME_AUDIO)
             save_audio_to_file(audio_data, audiopath)
-            logger.debug(f"[AUDIO] Audio saved to {audiopath}")
+            config.log_message(f"[RECORDING_LOOP] Audio saved: {audiopath}")
+            logger.debug(f"[RECORDING_LOOP] Audio saved to {audiopath}")
             self.app_state.audio_state.set_filename(audiopath)
         except Exception as e:
-            logger.debug(f"[AUDIO] background_recording_loop error={e}")
+            logger.debug(f"[RECORDING_LOOP] background_recording_loop error={e}")
+            config.log_message(f"[RECORDING_LOOP] background_recording_loop error={e}")
         return False
 
+
     def run_event_loop(self):
+        #sg.show_debugger_window()
         while True:
             event, values = self.WINDOW.read(timeout=10)
             if event in [sg.WIN_CLOSED, "exit"]:
                 break
+
+            if event == 'General':
+                #config.log_message(f"Event: {event}, Values: {values}\n", "-LOG_OUTPUT-")
+                open_settings_dialog()
+
+            #if event ==
             else:
                 self.handle_toggle_event(event,values)
 
@@ -146,7 +164,8 @@ class MainApp:
         exit(0)
 
 
-def handle_answers(transcript, WINDOW, state, label):
+
+def handle_answers(transcript, state, quick_update, full_update):
     if transcript is None:
         return
     lock = Lock()
@@ -154,7 +173,9 @@ def handle_answers(transcript, WINDOW, state, label):
 
     def response(target, short, temp):
         nonlocal finished_threads
-        target.update("Chatgpt is working...")
+        text = "Chatgpt is working..."
+        target.update(text)
+
         ans = generate_answer(transcript, short, temp)
         target.update(ans)
 
@@ -163,6 +184,5 @@ def handle_answers(transcript, WINDOW, state, label):
             if finished_threads == 2:  # Check if all threads are done
                 state.toggle()
 
-    Thread(target=response, args=(WINDOW["quick_label"], True, 0)).start()
-    Thread(target=response, args=(WINDOW["full_label"], False, 0.7)).start()
-
+    Thread(target=response, args=(quick_update, True, 0)).start()
+    Thread(target=response, args=(full_update, False, 0.7)).start()
