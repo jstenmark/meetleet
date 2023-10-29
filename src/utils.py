@@ -12,7 +12,7 @@ from src.config_manager import config
 def generate_file_path(filename):
     return join(config.SRC_PATH+config.TMP_DIR, f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')}-{filename}")
 
-def save_transcript_to_text(transcript, transcript_filename = config.FILE_NAME_TRANSCRIPT):
+def save_transcript_to_audio(transcript, transcript_filename = config.FILE_NAME_TRANSCRIPT):
     def write_in_new_thread(filepath, transcript):
         try:
             with open(filepath, "w") as f:
@@ -28,19 +28,6 @@ def save_transcript_to_text(transcript, transcript_filename = config.FILE_NAME_T
 def save_audio_to_file(audio_data: np.ndarray, file_audio_path) -> None:
     """
     Saves an audio data array to a file.
-
-    Args:
-        audio_data (np.ndarray): The audio data to be saved.
-        file_audio_path (str): The name of the output file.
-
-    Returns:
-        None
-
-    Example:
-        ```python
-        audio_data = np.array([0.1, 0.2, 0.3])
-        save_audio_file(audio_data, "output.wav")
-        ```
     """
     try:
         if audio_data is None or not isinstance(audio_data, np.ndarray):
