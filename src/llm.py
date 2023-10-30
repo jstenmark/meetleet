@@ -30,7 +30,7 @@ def transcribe_audio(path_to_file) -> str:
                 transcript = openai.Audio.translate("whisper-1", audio_file)
                 logger.debug("[TRANSCRIBE] FINISHED WHISPER TRANSLATE")
 
-                save_transcript_to_audio(transcript["text"],config.FILE_NAME_TRANSCRIPT)
+                save_transcript_to_audio(transcript["text"], config.FILE_NAME_TRANSCRIPT)
                 # if transcript["text"] == "you":
                 #     return "Whats best with python?"
                 return transcript["text"]
@@ -46,7 +46,10 @@ def transcribe_audio(path_to_file) -> str:
 
 
 def generate_answer(
-    transcript: str, short_answer: bool = True, temperature: float = 0.7, max_tokens=None
+    transcript: str,
+    short_answer: bool = True,
+    temperature: float = 0.7,
+    max_tokens=None,
 ) -> str:
     """
     Generates an answer based on the given transcript using the OpenAI GPT-3.5-turbo model.
@@ -77,6 +80,7 @@ def generate_answer(
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo"):
     """Returns the number of tokens used by a list of messages."""
     import tiktoken
+
     try:
         encoding = tiktoken.encoding_for_model(model)
     except ValueError:
@@ -84,9 +88,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo"):
         encoding = tiktoken.get_encoding("cl100k_base")
 
     if model[:7] == "gpt-3.5":
-        tokens_per_message = (
-            4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
-        )
+        tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
         tokens_per_name = -1  # if there's a name, the role is omitted
     elif model[:5] == "gpt-4":
         tokens_per_message = 3

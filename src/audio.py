@@ -1,4 +1,3 @@
-
 import numpy as np
 import soundcard as sc
 from loguru import logger

@@ -1,35 +1,23 @@
 {
-    "API": {
-        "OPENAI_API_KEY": ""
-    },
-    "Log_Settings": {
-        "LOG_LEVEL": "DEBUG",
-        "PRINT_CONFIG": true
-    },
-    "Paths_Files": {
-        "SRC_PATH": "/www/hack_interview/",
-        "TMP_DIR": "tmp/",
-        "FILE_NAME_LOG": "debug.log",
-        "FILE_NAME_TRANSCRIPT": "transcript.txt",
-        "FILE_NAME_AUDIO": "soundcapture.wav"
-    },
-    "Prompt": {
-        "INTERVIEW_POSITION": "python developer",
-        "SYSTEM_PROMPT": "You are interviewing for a {INTERVIEW_POSITION} position. You will receive an audio transcription of the question. It may not be complete. You need to understand the question and write an answer to it.",
-        "SHORTER_INSTRUCT": "Concisely respond, limiting your answer to 70 words.",
-        "LONGER_INSTRUCT": "Before answering, take a deep breath and think one step at a time. Believe the answer in no more than 150 words."
-    },
-    "Audio": {
-        "SAMPLE_RATE": 48000,
-        "RECORD_SEC": 1,
-        "SPEAKER_ID": "Built-in Audio Analog Stereo"
-    },
-    "GUI": {
-        "OFF_IMAGE": false,
-        "ON_IMAGE": false,
-        "TEXT_SIZE_WIDTH": false,
-        "APPLICATION_WIDTH": 85,
-        "COMMON_TEXT_AREA_BG_COLOR": "darkgrey",
-        "COMMON_TEXT_AREA_TEXT_COLOR": "black"
-    }
+    "OPENAI_API_KEY": "",
+    "LOG_LEVEL": "DEBUG",
+    "PRINT_CONFIG": false,
+    "SRC_PATH": "/www/hack_interview/",
+    "TMP_DIR": "tmp/",
+    "FILE_NAME_LOG": "debug.log",
+    "FILE_NAME_TRANSCRIPT": "transcript.txt",
+    "FILE_NAME_AUDIO": "soundcapture.wav",
+    "INTERVIEW_POSITION": "python developer",
+    "SYSTEM_PROMPT": "You are interviewing for a {INTERVIEW_POSITION} position. You will receive an audio transcription of the question. It may not be complete. You need to understand the question and write an answer to it.",
+    "SHORTER_INSTRUCT": "Concisely respond, limiting your answer to 70 words.",
+    "LONGER_INSTRUCT": "Before answering, take a deep breath and think one step at a time. Believe the answer in no more than 150 words.",
+    "SAMPLE_RATE": 48000,
+    "RECORD_SEC": 1,
+    "SPEAKER_ID": "Built-in Audio Analog Stereo",
+    "OFF_IMAGE": false,
+    "ON_IMAGE": false,
+    "TEXT_SIZE_WIDTH": false,
+    "APPLICATION_WIDTH": 85,
+    "COMMON_TEXT_AREA_BG_COLOR": "darkgrey",
+    "COMMON_TEXT_AREA_TEXT_COLOR": "black"
 }

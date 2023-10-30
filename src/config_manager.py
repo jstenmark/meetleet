@@ -1,5 +1,4 @@
 # src/config_manager.py
-
 import json
 import os
 
@@ -7,6 +6,17 @@ _instance = None
 
 
 class Config:
+    log_output_label = None
+
+    @classmethod
+    def set_log_output_label(cls, label):
+        cls.log_output_label = label
+
+    @classmethod
+    def log_message(cls, message):
+        if cls.log_output_label:
+            cls.log_output_label.update(value=message + "\n", append=True)
+
     def __new__(cls):
         global _instance
         if _instance is None:
@@ -22,6 +32,9 @@ class Config:
     def __getattr__(self, item):
         return self.config_data.get(item, None)
 
+    def set_log_output_label(self, label):
+        self.log_output_label = label
+
     def save_config(self):
         with open(self.CONFIG_FILE, "w") as f:
             json.dump(self.config_data, f, indent=4)
@@ -34,8 +47,7 @@ class Config:
             print(f"{self.CONFIG_FILE} not found. Using default config.")
 
     def print_config(self):
-        print("-- config --")
-        if self.config_data.get('Log_Settings', {}).get('PRINT_CONFIG', False):
+        if self.config_data.get("PRINT_CONFIG", False):
             output_str = "Configuration:\n"
             for key, value in self.config_data.items():
                 output_str += f"{key}={value}\n"
